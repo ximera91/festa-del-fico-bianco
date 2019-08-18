@@ -1,0 +1,19 @@
+-keep class bitter.jnibridge.* { *; }
+-keep class com.unity3d.player.* { *; }
+-keep class org.fmod.* { *; }
+
+-keep class com.yasirkula.unity.* { *; }
+
+-keepclassmembers public class com.google.ar.core.Session {
+static <methods>;
+}
+-keepclassmembers class com.google.ar.core.** { *; }
+-keep class com.google.ar.** { *; }
+-keep class com.google.vr.** { *; }
+-keep class com.unity3d.unitygar.** { *; }
+-keep class com.unity3d.plugin.** { *; }
+-keep class com.google.atap.tangoservice.** { *; }
+-keep class com.google.tango.** { *; }
+-keepclassmembers class com.google.ar.core.Pose {
+private <fields>;    
+}
