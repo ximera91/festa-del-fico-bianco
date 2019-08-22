@@ -8,8 +8,9 @@ public class ARMenuController : MonoBehaviour
 	public GameObject menuUI;
 	public GameObject fitToScanOverlay;
 	public float defaultScaleFactor = 0.0001f;
-	[ContextMenuItem("Play Animation", "PlayAnimation")]
 	public float animLength = 1;
+	public AnimationCurve animationCurve;
+	public MenuAnimation menuAnimation;
 
 	private List<AugmentedImage> tempAugmentedImages = new List<AugmentedImage>();
 	private Anchor anchor;
@@ -35,9 +36,6 @@ public class ARMenuController : MonoBehaviour
 					{
 						anchor = image.CreateAnchor(image.CenterPose);
 						float scaleFactor = defaultScaleFactor * (image.ExtentX / 0.1f);
-						/* menuUI.SetActive(true);
-						menuUI.transform.position = anchor.transform.position;
-						menuUI.transform.localScale = Vector3.one * scaleFactor; */
 
 						if(!menuUI.activeInHierarchy)
 						{
@@ -51,15 +49,10 @@ public class ARMenuController : MonoBehaviour
 						}
 					}
 				}
-				else if (image.TrackingState == TrackingState.Paused || image.TrackingState == TrackingState.Stopped)
+				else if (image.TrackingState == TrackingState.Stopped)
 				{
 					tracking = false;
 				}
-			}			
-
-			if (tracking)
-			{
-				menuUI.transform.rotation = Quaternion.LookRotation(cam.forward, cam.up);
 			}
 		}
 
@@ -75,6 +68,7 @@ public class ARMenuController : MonoBehaviour
 		fitToScanOverlay.SetActive(true);
 	}
 
+	[ContextMenu("Play Animation")]
 	public void PlayAnimation()
 	{
 		StartCoroutine(OpenMenu(Vector3.zero, defaultScaleFactor));
@@ -86,39 +80,20 @@ public class ARMenuController : MonoBehaviour
 		
 		menuUI.transform.position = targetPos;
 		menuUI.transform.localScale = Vector3.zero;
+		menuUI.transform.rotation = Quaternion.LookRotation(cam.forward, cam.up);
 		menuUI.SetActive(true);
 
 		while(t < 1)
 		{
-			float scale = EaseOutElastic(0, 1, t) * targetScale;
+			float scale = animationCurve.Evaluate(t) * targetScale;
 			menuUI.transform.localScale = Vector3.one * scale;
 			t += Time.deltaTime / animLength;
 			yield return null;
 		}
 
 		menuUI.transform.localScale = Vector3.one * targetScale;
+		menuAnimation.gameObject.SetActive(true);
 
-		menuUI.GetComponent<UnityEngine.Playables.PlayableDirector>().Play();
-	}
-
-	public float EaseOutElastic(float start, float end, float value)
-	{
-		end -= start;
-
-		float p = 0.3f;
-		float s = p * 0.25f;
-		float a = end;
-
-		if (value == 0)
-		{
-			return start;
-		}
-
-		if (value == 1)
-		{
-			return start + end;
-		}
-
-		return (a * Mathf.Pow(2, -10 * value) * Mathf.Sin((value - s) * (2 * Mathf.PI) / p) + end + start);
+		menuAnimation.Play();
 	}
 }

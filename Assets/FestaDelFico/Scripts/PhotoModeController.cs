@@ -8,10 +8,7 @@ using Permission = NativeGallery.Permission;
 public class PhotoModeController : MonoBehaviour
 {
 	public Canvas[] canvases;
-	public MonoBehaviour[] toBeDisabled;
 	public LayerMask cullingMask;
-	public GameObject permissionPanel;
-	public GameObject alertPanel;
 	public GameObject photoPanel;
 	public RawImage photoImage;
 	public Graphic flashPanel;
@@ -19,16 +16,27 @@ public class PhotoModeController : MonoBehaviour
 	public AudioManager audioManager;
 	public AudioSource source;
 
-	private Texture2D screenShot;
+	public DialogueWindowManager dialogueManager;
 
+	[Header("Stickers")]
+	public GameObject[] toBeDisabled;
+
+	private Texture2D screenShot;
 	private bool saved = false;
 	private bool hasPermission = false;
+	private bool usedStickers = false;
+	private bool savedStickers = false;
 
 	void Start()
 	{
 		if(NativeGallery.CheckPermission() == Permission.ShouldAsk)
 		{
-			permissionPanel.SetActive(true);
+			dialogueManager.ShowDialogue(
+				"Questa modalità necessita dell'accesso alla " + 
+				"memoria del telefono per salvare le foto.",
+				"OK",
+				"",
+				() => AskForPermission(true));
 		}
 		else
 		{
@@ -36,12 +44,14 @@ public class PhotoModeController : MonoBehaviour
 		}
 	}
 
+	public void UseStickers()
+	{
+		usedStickers = true;
+		saved = false;
+	}
+
 	public void AskForPermission(bool startupRequest)
 	{
-		if(startupRequest)
-		{
-			permissionPanel.SetActive(false);
-		}
 		NativeGallery.RequestPermission();
 		StartCoroutine(CheckPermission(startupRequest));
 	}
@@ -57,7 +67,16 @@ public class PhotoModeController : MonoBehaviour
 
 		if(permission == Permission.Denied)
 		{
-			alertPanel.SetActive(!startupRequest);
+			if(!startupRequest)
+			{
+				dialogueManager.ShowDialogue(
+					"Senza permesso di accedere alla memoria del telefono, " +
+					"l'applicazione non potrà salvare questa foto.",
+					"CHIEDI PERMESSI",
+					"ESCI",
+					() => AskForPermission(false),
+					() => DiscardScreenShot());
+			}
 			hasPermission = false;
 		}
 		else
@@ -69,7 +88,7 @@ public class PhotoModeController : MonoBehaviour
 	public void TakeScreenShot()
 	{
 		saved = false;
-		StartCoroutine(Shoot());
+		StartCoroutine(Shoot(false));
 
 		if(PlayerPrefs.GetInt("PHOTOMODE_SEEN", 0) == 0)
 		{
@@ -79,6 +98,12 @@ public class PhotoModeController : MonoBehaviour
 
 	public void SaveScreenShot()
 	{
+		if (usedStickers && !savedStickers)
+		{
+			StartCoroutine(SaveWithStickers());
+			return;
+		}
+
 		if (saved)
 		{
 			Toast.ShowAndroidToastMessage("La foto è già stata salvata nella Galleria.");
@@ -106,9 +131,13 @@ public class PhotoModeController : MonoBehaviour
 
 	public void ShareScreenShot()
 	{
-		if (!saved)
+		if (!saved && !usedStickers)
 		{
 			SaveScreenShot();
+		}
+		else if(usedStickers && !savedStickers)
+		{
+			ShareWithStickers();
 		}
 
 		string filePath = Path.Combine(Application.temporaryCachePath, "shared_img.png");
@@ -121,17 +150,50 @@ public class PhotoModeController : MonoBehaviour
 		photoImage.texture = null;
 		Destroy(screenShot);
 		photoPanel.SetActive(false);
+		usedStickers = false;
+		savedStickers = false;
+		saved = false;
 	}
 
-	public IEnumerator Shoot()
+	public IEnumerator SaveWithStickers()
 	{
-		foreach (Canvas canvas in canvases)
-		{
-			canvas.enabled = false;
-		}
+		yield return StartCoroutine(Shoot(true));
+		savedStickers = true;
 
+		SaveScreenShot();
+	}
+
+	public IEnumerator ShareWithStickers()
+	{
+		yield return StartCoroutine(SaveWithStickers());
+		ShareScreenShot();
+	}
+
+	public IEnumerator Shoot(bool withStickers)
+	{
 		LayerMask prev = Camera.main.cullingMask;
-		Camera.main.cullingMask = cullingMask;
+		bool[] active;
+
+		if(withStickers)
+		{
+			active = new bool[toBeDisabled.Length];
+
+			for (int i = 0; i < toBeDisabled.Length; i++)
+			{
+				active[i] = toBeDisabled[i].activeInHierarchy;
+				toBeDisabled[i].SetActive(false);
+			}
+		}
+		else
+		{
+			active = new bool[canvases.Length];
+			for (int i = 0; i < canvases.Length; i++)
+			{
+				active[i] = canvases[i].enabled;
+				canvases[i].enabled = false;
+			}
+			Camera.main.cullingMask = cullingMask;
+		}		
 
 		yield return new WaitForEndOfFrame();
 
@@ -139,15 +201,28 @@ public class PhotoModeController : MonoBehaviour
 		screenShot.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
 		screenShot.Apply();
 
-		foreach (Canvas canvas in canvases)
+		if(withStickers)
 		{
-			canvas.enabled = true;
+			for (int i = 0; i < toBeDisabled.Length; i++)
+			{
+				toBeDisabled[i].SetActive(active[i]);
+			}
 		}
-		
-		Camera.main.cullingMask = prev;
+		else
+		{
+			for (int i = 0; i < canvases.Length; i++)
+			{
+				canvases[i].enabled = active[i];
+			}
+			Camera.main.cullingMask = prev;
+		}
+
 		Coroutine flash = StartCoroutine(Flash());
 
-		photoImage.texture = screenShot;
+		if(!usedStickers)
+		{
+			photoImage.texture = screenShot;
+		}
 		yield return flash;
 
 		photoPanel.SetActive(true);

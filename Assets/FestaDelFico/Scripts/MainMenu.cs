@@ -9,15 +9,16 @@ using UnityEngine.UI;
 public class MainMenu : MonoBehaviour
 {
 	public Animation menuAnimation;
-	public Button[] arButtons;
 	public RectTransform[] UIScalers;
-	public DialogueWindowManager dialogueManager;
-
+	public LayoutGroup menuLayout;
+	public RectOffset menuPaddingAR;
+	public RectOffset menuPaddingNoAR;
+	public Button[] arButtons;
 	public GameObject arHand;
 	public GameObject photoHand;
+	public DialogueWindowManager dialogueManager;
 
 	private float notchHeight;
-
 	private bool escapePressed;
 	private float escapePressedTime = 0;
 	private float escapeTimeout = 2;
@@ -90,20 +91,12 @@ public class MainMenu : MonoBehaviour
 		switch (task.Result)
 		{
 			case ApkAvailabilityStatus.UnsupportedDeviceNotCapable:
-				foreach (Button b in arButtons)
-				{
-					b.gameObject.SetActive(false);
-				}
-				arCoreSupported = false;
+				ARSupported(false);
 				break;
 			case ApkAvailabilityStatus.SupportedNotInstalled:
 			case ApkAvailabilityStatus.SupportedApkTooOld:
 			case ApkAvailabilityStatus.SupportedInstalled:
-				foreach (Button b in arButtons)
-				{
-					b.gameObject.SetActive(true);
-				}
-				arCoreSupported = true;
+				ARSupported(true);
 				break;
 			case ApkAvailabilityStatus.UnknownTimedOut:
 				dialogueManager.ShowDialogue(
@@ -117,11 +110,7 @@ public class MainMenu : MonoBehaviour
 					"Per favore, controlla la connessione a internet e riavvia l'app.");
 				break;
 			default:
-				foreach (Button b in arButtons)
-				{
-					b.gameObject.SetActive(false);
-				}
-				arCoreSupported = false;
+				ARSupported(false);
 				break;
 		}
 	}
@@ -168,7 +157,6 @@ public class MainMenu : MonoBehaviour
 		switch (task.Result)
 		{
 			case ApkInstallationStatus.Success:
-				arCoreOk = true;
 				break;
 			case ApkInstallationStatus.ErrorUserDeclined:
 				dialogueManager.ShowDialogue(
@@ -246,6 +234,25 @@ public class MainMenu : MonoBehaviour
 			arHand.SetActive(false);
 		}
 		#endif
+	}
+	
+	private void ARSupported(bool supported)
+	{
+		foreach (Button b in arButtons)
+		{
+			b.gameObject.SetActive(supported);
+		}
+
+		if (supported)
+		{
+			menuLayout.padding = menuPaddingAR;
+		}
+		else
+		{
+			menuLayout.padding = menuPaddingNoAR;
+		}
+
+		arCoreSupported = supported;
 	}
 
 	private IEnumerator ChangeScene(int index)

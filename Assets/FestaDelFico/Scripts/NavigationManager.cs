@@ -10,7 +10,6 @@ public class NavigationManager : MonoBehaviour
 	private bool escapePressed;
 	private float escapePressedTime = 0;
 	private float escapeTimeout = 2;
-	private bool semaphore = false; 
 
     void Update()
 	{

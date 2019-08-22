@@ -32,7 +32,7 @@ public class FicoController : MonoBehaviour
 			button.SetActive(true);
 		}
 
-		if(button.activeInHierarchy)
+		if(button.activeInHierarchy && ManipulationSystem.Instance.enabled)
 		{
 			if(!manipulator.IsSelected())
 			{
@@ -70,11 +70,9 @@ public class FicoController : MonoBehaviour
 			#if UNITY_EDITOR
 			if(Input.GetMouseButtonDown(0))
 			{
-				Debug.Log("Wella1");
 				RaycastHit hit;
 				if(Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out hit, 20, buttonLayerMask))
 				{
-					Debug.Log("raycast hit");
 					if(hit.transform.tag.Equals(button.tag))
 					{
 						buttonRenderer.material = buttonPressedMaterial;

@@ -1,0 +1,76 @@
+{
+    "menuItems": [
+        {
+            "name": "Zeppole antiche al fico bianco",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": "Disponibile solo 24-25-26 agosto"
+        },
+        {
+            "name": "Dolci di fichi e arance selvatiche",
+            "ticket": 2,
+			"ingredients": "Dolci di fichi e arance selvatiche caramellate",
+			"notes": "Disponibile solo 24-25-26 agosto"
+        },
+        {
+            "name": "Zeppola di San Giuseppe",
+            "ticket": 1,
+			"ingredients": "Zeppola con crema pasticcera",
+			"notes": ""
+        },
+        {
+            "name": "Frittelle ai fichi",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": ""
+        },
+        {
+            "name": "Frutta",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": ""
+        },
+        {
+            "name": "Gelato ai fichi",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": ""
+        },
+        {
+            "name": "Sorbetto al fico",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": ""
+        },
+        {
+            "name": "Liquori",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": ""
+        },
+        {
+            "name": "Birra",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": ""
+        },
+        {
+            "name": "Vino",
+            "ticket": 1,
+			"ingredients": "",
+			"notes": ""
+		},		
+        {
+            "name": "Vino e percoche",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": ""
+        },
+        {
+            "name": "Acqua",
+            "ticket": 1,
+			"ingredients": "",
+			"notes": ""
+        }
+    ]
+}

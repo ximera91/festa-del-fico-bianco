@@ -6,6 +6,7 @@ TagManager:
   tags:
   - ManipulationSystem
   - RemoveButton
+  - Sticker
   layers:
   - Default
   - TransparentFX

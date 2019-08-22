@@ -8,19 +8,19 @@ using UnityEngine.Events;
 public class DialogueWindowManager : MonoBehaviour
 {
 	[SerializeField]
-	private Canvas dialogueCanvas;
+	private Canvas dialogueCanvas = null;
 	[SerializeField]
-	private TMP_Text dialogueMessage;
+	private TMP_Text dialogueMessage = null;
 	[SerializeField]
-	private Button agreeButton;
+	private Button agreeButton = null;
 	[SerializeField]
-	private TMP_Text agreeText;
+	private TMP_Text agreeText = null;
 	[SerializeField]
-	private Button declineButton;
+	private Button declineButton = null;
 	[SerializeField]
-	private TMP_Text declineText;
+	private TMP_Text declineText = null;
 
-	public bool buttonTextUppercase;
+	public bool buttonTextUppercase = false;
 
 	void Start()
 	{
@@ -37,6 +37,9 @@ public class DialogueWindowManager : MonoBehaviour
 		UnityAction agreeCallback = null,
 		UnityAction declineCallback = null)
 	{
+		agreeButton.onClick.RemoveAllListeners();
+		declineButton.onClick.RemoveAllListeners();
+
 		dialogueMessage.text = message;
 		
 		if(agreeLabel.Length == 0)
@@ -52,23 +55,6 @@ public class DialogueWindowManager : MonoBehaviour
 			agreeText.text = agreeLabel;
 		}
 
-		if(declineLabel.Length == 0)
-		{
-			declineButton.gameObject.SetActive(false);
-		}
-		else
-		{
-			if(buttonTextUppercase)
-			{
-				declineLabel = declineLabel.ToUpper();
-			}
-			declineButton.gameObject.SetActive(true);
-			declineText.text = declineLabel;
-		}
-
-		agreeButton.onClick.RemoveAllListeners();
-		declineButton.onClick.RemoveAllListeners();
-
 		if(agreeCallback != null)
 		{			
 			agreeButton.onClick.AddListener(agreeCallback);
@@ -76,17 +62,27 @@ public class DialogueWindowManager : MonoBehaviour
 		
 		agreeButton.onClick.AddListener(CloseWindow);
 
-		if(declineButton.gameObject.activeInHierarchy)
+		if(declineLabel.Length == 0)
 		{
+			declineButton.gameObject.SetActive(false);
+			declineButton.onClick.RemoveAllListeners();
+		}
+		else
+		{
+			if(buttonTextUppercase)
+			{
+				declineLabel = declineLabel.ToUpper();
+			}
+
+			declineText.text = declineLabel;
+
 			if(declineCallback != null)
 			{
 				declineButton.onClick.AddListener(declineCallback);
 			}
 			declineButton.onClick.AddListener(CloseWindow);
-		}
-		else
-		{
-			declineButton.onClick.RemoveAllListeners();
+
+			declineButton.gameObject.SetActive(true);
 		}
 
 		dialogueCanvas.enabled = true;

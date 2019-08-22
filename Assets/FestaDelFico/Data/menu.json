@@ -1,0 +1,94 @@
+{
+    "menuItems": [
+        {
+            "name": "Antipasto del ficaiuolo",
+            "ticket": 4,
+			"ingredients": "Salumi, formaggi e fichi",
+			"notes": ""
+        },
+        {
+            "name": "Fusilli",
+            "ticket": 4,
+			"ingredients": "A scelta tra: sugo, e speck e fichi",
+			"notes": ""
+        },
+        {
+            "name": "Cavati e fichi",
+            "ticket": 4,
+			"ingredients": "Cavatielli con pancetta e fichi",
+			"notes": ""
+        },
+        {
+            "name": "Pizza cilentana",
+            "ticket": 1,
+			"ingredients": "Pizza con pomodoro e cacioricotta di capra",
+			"notes": ""
+        },
+        {
+            "name": "Pizza ai fichi",
+            "ticket": 2,
+			"ingredients": "A scelta tra: fichi speck e ricotta, fichi prosciutto mozzarella e pomodorini",
+			"notes": ""
+        },
+        {
+            "name": "Salsiccia ai fichi",
+            "ticket": 4,
+			"ingredients": "Salsiccia con crema di fichi",
+			"notes": ""
+        },
+        {
+            "name": "Sfriuonzolo con fichi",
+            "ticket": 4,
+			"ingredients": "Soffritto di maiale con fichi",
+			"notes": ""
+        },
+        {
+            "name": "Caciocavallo impiccato con crema di fichi",
+            "ticket": 3,
+			"ingredients": "Bruschetta con caciocavallo fuso e crema di fichi",
+			"notes": ""
+        },
+        {
+            "name": "Patate scaldate e friarielli",
+            "ticket": 3,
+			"ingredients": "Patate bollite con friggitelli",
+			"notes": ""
+		},		
+        {
+            "name": "Patate cauzodde",
+            "ticket": 2,
+			"ingredients": "Patatine fritte con la buccia",
+			"notes": ""
+        },
+        {
+            "name": "Pizza fritta",
+            "ticket": 2,
+			"ingredients": "Condimento a scelta tra: sale, zucchero, miele, marmellata di fichi e pomodoro",
+			"notes": ""
+        },
+        {
+            "name": "Zeppole con alici",
+            "ticket": 2,
+			"ingredients": "Frittelle con alici",
+			"notes": ""
+        },
+        {
+            "name": "Insalata mediterranea d'agosto",
+            "ticket": 4,
+			"ingredients": "Ceci, ceci neri di Corbella, orzo, farro, fichi e uva",
+			"notes": "Disponibile solo 24-25-26 agosto"
+        },
+        {
+            "name": "Mbottetelle di ceci e fico",
+            "ticket": 2,
+			"ingredients": "Frittelle con fiori di zucca",
+			"notes": "Disponibile solo 24-25-26 agosto"
+        },
+        {
+            "name": "Pane di fichi",
+            "ticket": 4,
+			"ingredients": "Pane di fichi con cacioricotta e fichi sciroppati",
+			"notes": "Disponibile solo 24-25-26 agosto"
+        }
+    ]
+}
