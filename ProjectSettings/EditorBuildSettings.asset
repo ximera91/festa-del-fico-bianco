@@ -6,17 +6,20 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/FestaDelFico/Scenes/NativeCamera.unity
+    guid: c102b30dcea7f524c86432f93092cc10
+  - enabled: 0
+    path: Assets/FestaDelFico/Scenes/PhotoModeNOAR.unity
+    guid: 092ff40fe6306ab498d68ca9d3f79918
+  - enabled: 0
     path: Assets/FestaDelFico/Scenes/MainMenu.unity
     guid: 5494df485c773ad45abae8deb5470374
-  - enabled: 1
+  - enabled: 0
     path: Assets/FestaDelFico/Scenes/MenuAR.unity
     guid: 477e943507b3d3149b8365fc476d6c55
-  - enabled: 1
+  - enabled: 0
     path: Assets/FestaDelFico/Scenes/PhotoMode.unity
     guid: e9b421cae45d3534db73700972d48169
-  - enabled: 1
-    path: Assets/FestaDelFico/Scenes/PhotoMode 1.unity
-    guid: 092ff40fe6306ab498d68ca9d3f79918
   m_configObjects:
     com.unity.xr.arcore.PlayerSettings: {fileID: 11400000, guid: 04122d42136983f49a30e764237ddf29,
       type: 2}

@@ -5,6 +5,7 @@ using GoogleARCore;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Permission = NativeCamera.Permission;
 
 public class MainMenu : MonoBehaviour
 {
@@ -13,7 +14,8 @@ public class MainMenu : MonoBehaviour
 	public LayoutGroup menuLayout;
 	public RectOffset menuPaddingAR;
 	public RectOffset menuPaddingNoAR;
-	public Button[] arButtons;
+	public Button arMenuButton;
+	public Button photoButton;
 	public GameObject arHand;
 	public GameObject photoHand;
 	public DialogueWindowManager dialogueManager;
@@ -30,10 +32,7 @@ public class MainMenu : MonoBehaviour
 	void Awake()
 	{
 		#if !UNITY_EDITOR
-		foreach (Button b in arButtons)
-		{
-			b.gameObject.SetActive(false);
-		}
+		arMenuButton.gameObject.SetActive(false);
 		StartCoroutine(CheckARCoreSupported());
 		#endif
 	}
@@ -238,18 +237,20 @@ public class MainMenu : MonoBehaviour
 	
 	private void ARSupported(bool supported)
 	{
-		foreach (Button b in arButtons)
-		{
-			b.gameObject.SetActive(supported);
-		}
+		arMenuButton.gameObject.SetActive(supported);
+		photoButton.gameObject.SetActive(supported); // TODO: Da cambiare per foto
 
 		if (supported)
 		{
 			menuLayout.padding = menuPaddingAR;
+			arMenuButton.onClick.AddListener(() => StartSceneChangeAR(1));
+			photoButton.onClick.AddListener(() => StartSceneChangeAR(2));
 		}
 		else
 		{
 			menuLayout.padding = menuPaddingNoAR;
+			// photoButton.onClick.AddListener(() => StartSceneChange(3));
+			// TODO: Da cambiare per foto
 		}
 
 		arCoreSupported = supported;
@@ -275,6 +276,78 @@ public class MainMenu : MonoBehaviour
 
 			loading.allowSceneActivation = true;
 		}
+	}
+
+	public void TryTakePicture()
+	{
+		if(NativeCamera.CheckPermission() == Permission.Granted)
+		{
+			NativeCamera.TakePicture(PictureTaken);
+		}
+		else
+		{
+			StartCoroutine(CheckCameraPermission());
+		}
+	}
+
+	private IEnumerator CheckCameraPermission()
+	{
+		Permission permission = NativeCamera.CheckPermission();
+
+		if(permission == Permission.Denied)
+		{
+			if(NativeCamera.CanOpenSettings())
+			{
+				dialogueManager.ShowDialogue(
+					"Non hai autorizzato l'accesso alla fotocamera. " +
+					"Vuoi andare alle impostazioni del telefono per autorizzarlo?",
+					"OK",
+					"NO",
+					() => NativeCamera.OpenSettings());
+			}
+			else
+			{
+				dialogueManager.ShowDialogue(
+					"Non hai autorizzato l'accesso alla fotocamera. " +
+					"Per favore, autorizza l'accesso nelle impostazioni del telefono.");
+			}
+
+			yield break;
+		}
+		else if (permission == Permission.ShouldAsk)
+		{
+			dialogueManager.ShowDialogue(
+				"L'app ha bisogno dell'accesso alla fotocamera per scattare la foto.",
+				"OK",
+				"",
+				() => { permission = NativeCamera.RequestPermission(); });
+
+			yield return new WaitForSeconds(0.1f);
+		}
+
+		float t = Time.realtimeSinceStartup;
+		yield return new WaitUntil(
+			() => 
+			{
+				return 
+					NativeCamera.CheckPermission() == Permission.Granted || 
+					Time.realtimeSinceStartup - t > 6;
+			});
+
+		if(permission == Permission.Granted)
+		{
+			TryTakePicture();
+		}
+	}
+
+	private void PictureTaken(string path)
+	{
+		if(path == null || path.Length == 0)
+		{
+			return;
+		}
+
+		Texture2D picture = NativeCamera.LoadImageAtPath(path);
 	}
 
 	public void OpenURL(string url)

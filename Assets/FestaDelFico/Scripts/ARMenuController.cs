@@ -41,6 +41,10 @@ public class ARMenuController : MonoBehaviour
 						{
 							StartCoroutine(OpenMenu(anchor.transform.position, scaleFactor));
 						}
+						else
+						{
+							menuUI.transform.position = anchor.transform.position;
+						}
 						tracking = true;
 
 						if(PlayerPrefs.GetInt("ARMENU_SEEN", 0) == 0)

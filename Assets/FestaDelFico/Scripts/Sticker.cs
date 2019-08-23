@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class Sticker : Graphic
 {
-	[Range(0.5f, 2f)]
+	[Range(0.1f, 2f)]
 	public float minScale = 0.75f;
 	[Range(2f, 5f)]
 	public float maxScale = 3f;
@@ -56,16 +56,20 @@ public class Sticker : Graphic
 			rectTransform.localScale = Vector3.Lerp(rectTransform.localScale, normalizedScale, 0.2f);
 		}
 
-		float scale = rectTransform.localScale.x;
-		deleteButton.transform.rotation = Quaternion.identity;
-		deleteButton.transform.position = rectTransform.position + Vector3.down * buttonYOffset * scale;
+		if(selected)
+		{
+			float scale = rectTransform.localScale.x;
+			deleteButton.targetGraphic.rectTransform.rotation = Quaternion.identity;
+			deleteButton.targetGraphic.rectTransform.position = rectTransform.position + Vector3.down * buttonYOffset * scale;
+			deleteButton.targetGraphic.rectTransform.localScale = Vector3.one * 1 / scale;
+		}
 	}
 
 	public void SetSprite(Sprite sprite)
 	{
 		image.sprite = sprite;
 		rectTransform.sizeDelta = sprite.bounds.size;
-		buttonYOffset = deleteButtonYOffset + sprite.bounds.extents.y; 
+		buttonYOffset = deleteButtonYOffset  * (Screen.height / 2340) + sprite.bounds.extents.y; 
 	}
 
 	public bool IsSelected()
@@ -73,6 +77,7 @@ public class Sticker : Graphic
 		return selected;
 	}
 
+	[ContextMenu("Select")]
 	public void Select()
 	{
 		selected = true;

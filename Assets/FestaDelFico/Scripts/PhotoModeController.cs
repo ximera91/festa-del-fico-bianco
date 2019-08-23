@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
-using Permission = NativeGallery.Permission;
+#if UNITY_ANDROID
+using UnityEngine.Android;
+#endif
+
 
 public class PhotoModeController : MonoBehaviour
 {
@@ -14,8 +17,8 @@ public class PhotoModeController : MonoBehaviour
 	public Graphic flashPanel;
 	public float flashTime = 0.1f;
 	public AudioManager audioManager;
-	public AudioSource source;
-
+	public bool IsAugmentedReality = false;
+	public CameraController cameraController;
 	public DialogueWindowManager dialogueManager;
 
 	[Header("Stickers")]
@@ -24,24 +27,53 @@ public class PhotoModeController : MonoBehaviour
 	private Texture2D screenShot;
 	private bool saved = false;
 	private bool hasPermission = false;
+	private bool hasCameraPermission = false;
 	private bool usedStickers = false;
 	private bool savedStickers = false;
 
 	void Start()
 	{
-		if(NativeGallery.CheckPermission() == Permission.ShouldAsk)
+		#if UNITY_ANDROID
+		if(!IsAugmentedReality)
 		{
-			dialogueManager.ShowDialogue(
-				"Questa modalità necessita dell'accesso alla " + 
-				"memoria del telefono per salvare le foto.",
-				"OK",
-				"",
-				() => AskForPermission(true));
+			if (!Permission.HasUserAuthorizedPermission(Permission.Camera) || NativeGallery.CheckPermission() == NativeGallery.Permission.ShouldAsk)
+			{
+				hasCameraPermission = false;
+				hasPermission = false;
+				cameraController.enabled = false;
+
+				AskForPermission(true);
+				/* dialogueManager.ShowDialogue(
+					"Questa modalità necessita dell'accesso alla fotocamera " +
+					"e alla memoria del telefono per salvare le foto",
+					"OK",
+					"",
+					() => AskForPermission(true)); */
+			}
+			else
+			{
+				hasPermission = true;
+				cameraController.enabled = true;
+			}
 		}
 		else
 		{
-			hasPermission = true;
-		}
+			if (NativeGallery.CheckPermission() == NativeGallery.Permission.ShouldAsk)
+			{
+				dialogueManager.ShowDialogue(
+					"Questa modalità necessita dell'accesso alla " +
+					"memoria del telefono per salvare le foto",
+					"OK",
+					"",
+					() => AskForPermission(true));
+				hasPermission = false;
+			}
+			else
+			{
+				hasPermission = true;
+			}
+		}        
+		#endif
 	}
 
 	public void UseStickers()
@@ -52,20 +84,58 @@ public class PhotoModeController : MonoBehaviour
 
 	public void AskForPermission(bool startupRequest)
 	{
+		#if UNITY_ANDROID
+		if(!hasCameraPermission && !IsAugmentedReality)
+		{
+			Permission.RequestUserPermission(Permission.Camera);
+		}
+		#endif
 		NativeGallery.RequestPermission();
 		StartCoroutine(CheckPermission(startupRequest));
 	}
 
 	private IEnumerator CheckPermission(bool startupRequest)
 	{
-		Permission permission;
+		#if PLATFORM_ANDROID
+		if(!Permission.HasUserAuthorizedPermission(Permission.Camera) && !IsAugmentedReality)
+		{
+			float t = 0;
+			while(!Permission.HasUserAuthorizedPermission(Permission.Camera) && t < 8)
+			{
+				yield return null;
+				t += Time.deltaTime;
 
-		while((permission = NativeGallery.CheckPermission()) == Permission.ShouldAsk)
+				if(t > 8)
+				{
+					dialogueManager.ShowDialogue(
+					"Senza permesso di accedere alla fotocamera non sarà possibile scattare foto.",
+					"CHIEDI PERMESSI",
+					"ESCI",
+					() => AskForPermission(false),
+					() => DiscardScreenShot());
+
+					hasCameraPermission = false;
+					cameraController.enabled = false;
+					yield break;
+				}
+			}
+		}
+		else
+		{			
+			cameraController.enabled = true;
+			hasCameraPermission = true;
+		}
+		#endif
+
+
+		NativeGallery.Permission permission;
+
+		while((permission = NativeGallery.CheckPermission()) == NativeGallery.Permission.ShouldAsk)
 		{
 			yield return null;
 		}
 
-		if(permission == Permission.Denied)
+		if(permission == NativeGallery.Permission.Denied)
 		{
 			if(!startupRequest)
 			{
@@ -81,7 +151,7 @@ public class PhotoModeController : MonoBehaviour
 		}
 		else
 		{
-			hasPermission = true;
+			hasPermission = true && hasCameraPermission;
 		}
 	}
 
@@ -122,7 +192,7 @@ public class PhotoModeController : MonoBehaviour
 			"Festa del Fico Bianco",
 			"festa_del_fico_bianco_{0}.png");
 
-		if(perm == Permission.Granted)
+		if(perm == NativeGallery.Permission.Granted)
 		{
 			Toast.ShowAndroidToastMessage("La foto è stata salvata nella Galleria.");
 			saved = true;

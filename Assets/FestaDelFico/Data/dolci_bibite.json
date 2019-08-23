@@ -13,6 +13,12 @@
 			"notes": "Disponibile solo 24-25-26 agosto"
         },
         {
+            "name": "Mbottetelle di ceci e fico",
+            "ticket": 2,
+			"ingredients": "Frittelle ripiene di ceci e fichi",
+			"notes": "Disponibile solo 24-25-26 agosto"
+        },
+        {
             "name": "Zeppola di San Giuseppe",
             "ticket": 1,
 			"ingredients": "Zeppola con crema pasticcera",
@@ -65,7 +71,19 @@
             "ticket": 2,
 			"ingredients": "",
 			"notes": ""
-        },
+		},
+		{
+			"name": "Coca Cola",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": ""
+		},
+		{
+			"name": "Pepsi",
+            "ticket": 2,
+			"ingredients": "",
+			"notes": ""
+		},
         {
             "name": "Acqua",
             "ticket": 1,

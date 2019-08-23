@@ -10,5 +10,10 @@
       <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
     </activity>
     <provider android:name="com.yasirkula.unity.UnitySSContentProvider" android:authorities="it.ximera.festadelfico" android:exported="false" android:grantUriPermissions="true" />
+	<provider
+		android:name="com.yasirkula.unity.NativeCameraContentProvider"
+		android:authorities="it.ximera.festadelfico.nativecamera"
+		android:exported="false"
+		android:grantUriPermissions="true" />
   </application>
 </manifest>
