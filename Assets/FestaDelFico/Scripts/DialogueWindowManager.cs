@@ -7,6 +7,30 @@ using UnityEngine.Events;
 
 public class DialogueWindowManager : MonoBehaviour
 {
+	protected static DialogueWindowManager instance;
+
+	/// <summary>
+	/// Returns the instance of the object.
+	/// </summary>
+	/// <returns></returns>
+	public static DialogueWindowManager Instance
+	{
+		get
+		{
+			if (instance == null)
+			{
+				instance = FindObjectOfType<DialogueWindowManager>(); 
+
+				if (instance == null)
+				{
+					Debug.LogError("An instance of " + typeof(DialogueWindowManager) +
+						" is needed in the scene, but there is none.");
+				}
+			} 
+			return instance;
+		}
+	}
+
 	[SerializeField]
 	private Canvas dialogueCanvas = null;
 	[SerializeField]

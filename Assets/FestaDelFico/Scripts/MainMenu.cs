@@ -18,7 +18,7 @@ public class MainMenu : MonoBehaviour
 	public Button photoButton;
 	public GameObject arHand;
 	public GameObject photoHand;
-	public DialogueWindowManager dialogueManager;
+	public PhotoController photoController;
 
 	private float notchHeight;
 	private bool escapePressed;
@@ -98,13 +98,13 @@ public class MainMenu : MonoBehaviour
 				ARSupported(true);
 				break;
 			case ApkAvailabilityStatus.UnknownTimedOut:
-				dialogueManager.ShowDialogue(
+				DialogueWindowManager.Instance.ShowDialogue(
 					"L'app sta impiegando troppo tempo per rispondere.\n" +
 					"Per favore, controlla la connessione a internet e riavvia l'app.");
 				break;
 			case ApkAvailabilityStatus.UnknownChecking:
 			case ApkAvailabilityStatus.UnknownError:
-				dialogueManager.ShowDialogue(
+				DialogueWindowManager.Instance.ShowDialogue(
 					"L'app ha riscontrato un errore.\n" +
 					"Per favore, controlla la connessione a internet e riavvia l'app.");
 				break;
@@ -124,7 +124,7 @@ public class MainMenu : MonoBehaviour
 		{
 			case ApkAvailabilityStatus.SupportedApkTooOld:
 			case ApkAvailabilityStatus.SupportedNotInstalled:
-				dialogueManager.ShowDialogue(
+				DialogueWindowManager.Instance.ShowDialogue(
 					"L'app ha bisogno dell'ultima versione di Google Play Services per AR per funzionare.\n",
 					"Installa",
 					"Rifiuta",
@@ -158,14 +158,14 @@ public class MainMenu : MonoBehaviour
 			case ApkInstallationStatus.Success:
 				break;
 			case ApkInstallationStatus.ErrorUserDeclined:
-				dialogueManager.ShowDialogue(
+				DialogueWindowManager.Instance.ShowDialogue(
 					"L'app ha bisogno dell'ultima versione di Google Play Services per AR per funzionare.\n",
 					"Installa",
 					"Rifiuta",
 					InstallARCore);
 				break;
 			case ApkInstallationStatus.Error:
-				dialogueManager.ShowDialogue(
+				DialogueWindowManager.Instance.ShowDialogue(
 					"L'installazione ha riscontrato un errore.\n" +
 					"Per favore, controlla la connessione internet e riavvia l'app.");
 				break;
@@ -215,21 +215,20 @@ public class MainMenu : MonoBehaviour
 			else
 			{
 				arHand.SetActive(false);
-				if(PlayerPrefs.GetInt("PHOTOMODE_SEEN", 0) == 0)
-				{
-					PlayerPrefs.SetInt("PHOTOMODE_SEEN", 0);
-					photoHand.SetActive(true);
-				}
-				else
-				{
-					photoHand.SetActive(false);
-				}
 			}
 		#if !UNITY_EDITOR
 		}
 		else
 		{
-			photoHand.SetActive(false);
+			if(PlayerPrefs.GetInt("PHOTOMODE_SEEN", 0) == 0)
+			{
+				PlayerPrefs.SetInt("PHOTOMODE_SEEN", 0);
+				photoHand.SetActive(true);
+			}
+			else
+			{
+				photoHand.SetActive(false);
+			}
 			arHand.SetActive(false);
 		}
 		#endif
@@ -238,7 +237,7 @@ public class MainMenu : MonoBehaviour
 	private void ARSupported(bool supported)
 	{
 		arMenuButton.gameObject.SetActive(supported);
-		photoButton.gameObject.SetActive(supported); // TODO: Da cambiare per foto
+		//photoButton.gameObject.SetActive(supported); // TODO: Da cambiare per foto
 
 		if (supported)
 		{
@@ -249,7 +248,7 @@ public class MainMenu : MonoBehaviour
 		else
 		{
 			menuLayout.padding = menuPaddingNoAR;
-			// photoButton.onClick.AddListener(() => StartSceneChange(3));
+			photoButton.onClick.AddListener(() => photoController.TryTakePicture());
 			// TODO: Da cambiare per foto
 		}
 
@@ -276,78 +275,6 @@ public class MainMenu : MonoBehaviour
 
 			loading.allowSceneActivation = true;
 		}
-	}
-
-	public void TryTakePicture()
-	{
-		if(NativeCamera.CheckPermission() == Permission.Granted)
-		{
-			NativeCamera.TakePicture(PictureTaken);
-		}
-		else
-		{
-			StartCoroutine(CheckCameraPermission());
-		}
-	}
-
-	private IEnumerator CheckCameraPermission()
-	{
-		Permission permission = NativeCamera.CheckPermission();
-
-		if(permission == Permission.Denied)
-		{
-			if(NativeCamera.CanOpenSettings())
-			{
-				dialogueManager.ShowDialogue(
-					"Non hai autorizzato l'accesso alla fotocamera. " +
-					"Vuoi andare alle impostazioni del telefono per autorizzarlo?",
-					"OK",
-					"NO",
-					() => NativeCamera.OpenSettings());
-			}
-			else
-			{
-				dialogueManager.ShowDialogue(
-					"Non hai autorizzato l'accesso alla fotocamera. " +
-					"Per favore, autorizza l'accesso nelle impostazioni del telefono.");
-			}
-
-			yield break;
-		}
-		else if (permission == Permission.ShouldAsk)
-		{
-			dialogueManager.ShowDialogue(
-				"L'app ha bisogno dell'accesso alla fotocamera per scattare la foto.",
-				"OK",
-				"",
-				() => { permission = NativeCamera.RequestPermission(); });
-
-			yield return new WaitForSeconds(0.1f);
-		}
-
-		float t = Time.realtimeSinceStartup;
-		yield return new WaitUntil(
-			() => 
-			{
-				return 
-					NativeCamera.CheckPermission() == Permission.Granted || 
-					Time.realtimeSinceStartup - t > 6;
-			});
-
-		if(permission == Permission.Granted)
-		{
-			TryTakePicture();
-		}
-	}
-
-	private void PictureTaken(string path)
-	{
-		if(path == null || path.Length == 0)
-		{
-			return;
-		}
-
-		Texture2D picture = NativeCamera.LoadImageAtPath(path);
 	}
 
 	public void OpenURL(string url)

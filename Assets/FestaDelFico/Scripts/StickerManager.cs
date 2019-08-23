@@ -7,14 +7,18 @@ using DigitalRubyShared;
 
 using TouchPhase = DigitalRubyShared.TouchPhase;
 
+
+// TODO: aggiungere GameObject notifica sticker e PlayerPrefs "Stickers_used"
 public class StickerManager : MonoBehaviour
 {
+	public GameObject stickersPanel;
+	public GameObject stickersButton;
+	public GameObject closeButton;
+	public GameObject notification;
    	public EventSystem eventSystem;
 	public GraphicRaycaster raycaster;
 	public GameObject prefab;
 	public RectTransform parent;
-	public FingersScript fingers;
-	public DialogueWindowManager dialogueManager;
 
 	private TapGestureRecognizer tapGesture;
 	private PanGestureRecognizer panGesture;
@@ -26,7 +30,7 @@ public class StickerManager : MonoBehaviour
 	private Vector2 positionOffset;
 	private PointerEventData eventData;
 	private List<RaycastResult> raycastResults;
-	private bool saved = false;
+	private bool isDirty = false;
 
 	void Awake()
 	{
@@ -39,6 +43,16 @@ public class StickerManager : MonoBehaviour
 		}
 		
 		positionOffset = new Vector2(Screen.width / 2, Screen.height / 2);
+
+		if(PlayerPrefs.GetInt("PHOTOMODE_SEEN", 0) == 0)
+		{
+			PlayerPrefs.SetInt("PHOTOMODE_SEEN", 0);
+			notification.SetActive(true);
+		}
+		else
+		{
+			notification.SetActive(false);
+		}
 	}
 
 	void Start()
@@ -49,6 +63,31 @@ public class StickerManager : MonoBehaviour
 		CreateRotateGesture();
 
 		scaleGesture.AllowSimultaneousExecution(rotateGesture);
+	}
+
+	public void OpenStickers()
+	{
+		if(PlayerPrefs.GetInt("PHOTOMODE_SEEN", 0) == 0)
+		{
+			PlayerPrefs.SetInt("PHOTOMODE_SEEN", 1);
+			notification.SetActive(false);
+		}
+
+		stickersPanel.SetActive(true);
+		ToggleButtons();		
+	}
+
+	public void CloseStickers()
+	{
+		notification.SetActive(false);
+		stickersPanel.SetActive(false);
+		ToggleButtons();
+	}
+
+	private void ToggleButtons()
+	{
+		stickersButton.SetActive(closeButton.activeInHierarchy);
+		closeButton.SetActive(!stickersButton.activeInHierarchy);
 	}
 
 	private void CreateTapGesture()
@@ -136,7 +175,9 @@ public class StickerManager : MonoBehaviour
 			{
 				Vector2 touchPosition = new Vector2(panGesture.FocusX, panGesture.FocusY);
 				selectedSticker.MoveTo(touchPosition - positionOffset, false);
-			}			
+			}
+
+			isDirty = true;			
 		}
 	}
 
@@ -152,10 +193,12 @@ public class StickerManager : MonoBehaviour
 		if (gesture.State == GestureRecognizerState.Executing)
 		{
 			selectedSticker.ScaleMultiplier(scaleGesture.ScaleMultiplier);
+			isDirty = true;
 		}
 		else if(gesture.State == GestureRecognizerState.Ended)
 		{
 			selectedSticker.NormalizeScale();
+			isDirty = true;
 		}
 	}
 	private void CreateRotateGesture()
@@ -169,7 +212,11 @@ public class StickerManager : MonoBehaviour
 	{
 		if (gesture.State == GestureRecognizerState.Executing)
 		{
-			selectedSticker.rectTransform.Rotate(0.0f, 0.0f, rotateGesture.RotationRadiansDelta * Mathf.Rad2Deg);
+			selectedSticker.rectTransform.Rotate(
+				0.0f, 
+				0.0f, 
+				rotateGesture.RotationRadiansDelta * Mathf.Rad2Deg);
+			isDirty = true;
 		}
 	} 
 
@@ -202,7 +249,22 @@ public class StickerManager : MonoBehaviour
 			fingers.PassThroughObjects.Add(t.gameObject);
 		} */
 
-		saved = false;
+		isDirty = true;
+	}
+
+	public bool IsDirty()
+	{
+		return isDirty;
+	}
+
+	public bool HasActiveStickers()
+	{
+		return activeStickers.Count > 0;
+	}
+
+	public void SetDirty(bool value)
+	{
+		isDirty = value;
 	}
 
 	public void DeleteSticker(Sticker sticker)
@@ -212,6 +274,8 @@ public class StickerManager : MonoBehaviour
 			selectedSticker = null;
 		}
 		Destroy(sticker.gameObject);
+
+		isDirty = true;
 	}
 
 	public void DeleteAllStickers()
@@ -224,32 +288,22 @@ public class StickerManager : MonoBehaviour
 		foreach(Sticker s in activeStickers)
 		{
 			Destroy(s.gameObject);
-		}
+		}		
+
+		FingersScript.Instance.RemoveGesture(tapGesture);
+		FingersScript.Instance.RemoveGesture(panGesture);
+		FingersScript.Instance.RemoveGesture(scaleGesture);
+		FingersScript.Instance.RemoveGesture(rotateGesture);
+
+		isDirty = false;
 	}
 
-	public void OnBeforeSave()
+	public void OnBeforeSaving()
 	{
-		saved = true;
+		isDirty = false;
 		if(selectedSticker != null)
 		{
 			selectedSticker.Deselect();
 		}
-	}
-
-	public void OnBeforeReturn()
-	{
-		if(!saved)
-		{
-			dialogueManager.ShowDialogue(
-				"Vuoi davvero uscire? Le modifiche non salvate andranno perse",
-				"ESCI",
-				"ANNULLA",
-				() => 
-				{ 
-					DeleteAllStickers(); 
-					gameObject.SetActive(false); 
-				},
-				null);
-		}		
 	}
 }
