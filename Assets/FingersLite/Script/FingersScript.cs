@@ -524,7 +524,7 @@ namespace DigitalRubyShared
 
             if (scrollDelta != 0.0f)
             {
-                //Debug.LogFormat("Mouse delta: {0}", scrollDelta);
+                // Debug.LogFormat("Mouse delta: {0}", scrollDelta);
             }
 
 #endif

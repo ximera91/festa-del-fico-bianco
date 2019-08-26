@@ -6,13 +6,12 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using System.IO;
 
-// TODO: controllare incosistenza screenshot e picture
 public class PhotoController : MonoBehaviour
 {
 	public Canvas photoCanvas;
 	public GameObject photoPanel;
 	public RawImage photoImage;
-	public AspectRatioFitter fitter; // TODO: Check picture resolution
+	public AspectRatioFitter fitter;
 
 	[Header("Stickers")]
 	public bool canUseStickers = true;
@@ -26,42 +25,24 @@ public class PhotoController : MonoBehaviour
 	[SerializeField]
 	protected bool shouldCheckPermissionOnStart = false;
 
-	void Start()
+	void Awake()
 	{
-		if(shouldCheckPermissionOnStart)
-		{
-			StartCoroutine(CheckAllPermissions(null, null));
-		}
-
 		stickerManager = GameObject.FindObjectOfType<StickerManager>();
 		if(stickerManager == null)
 		{
 			canUseStickers = false;
-			Debug.Log("Sticker Manager not found in the scene. Stickers will be disabled.");
+			Debug.LogError("Sticker Manager not found in the scene. Stickers will be disabled.");
+		}
+	}
+
+	void Start()
+	{
+		if(shouldCheckPermissionOnStart)
+		{
+			StartCoroutine(CheckCameraPermission(null));
 		}
 
 		fitter.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
-	}
-
-	public void OpenStickers()
-	{
-		if(canUseStickers)
-		{
-			stickerManager.OpenStickers();
-		}
-	}
-
-	public void CloseStickers()
-	{
-		if(canUseStickers)
-		{
-			stickerManager.CloseStickers();
-
-			if(stickerManager.IsDirty())
-			{
-				saved = false;
-			}
-		}
 	}
 
     public virtual void TryTakePicture()
@@ -112,10 +93,32 @@ public class PhotoController : MonoBehaviour
 		}
 	}
 
+	public void OpenStickers()
+	{
+		if(canUseStickers)
+		{
+			stickerManager.OpenStickers();
+		}
+	}
+
+	public void CloseStickers()
+	{
+		if(canUseStickers)
+		{
+			stickerManager.CloseStickers();
+
+			if(stickerManager.IsDirty())
+			{
+				saved = false;
+			}
+		}
+	}
+
 	protected void PictureTaken(string path)
 	{
 		if(path == null || path.Length == 0)
 		{
+			DiscardPhoto();
 			return;
 		}
 
@@ -124,7 +127,8 @@ public class PhotoController : MonoBehaviour
 		if(picture == null)
 		{
 			Debug.LogError("Something went wrong. Unable to find image at path " + path);
-			DialogueWindowManager.Instance.ShowDialogue("Qualcosa è andato storto. Non è stato possibile salvare la foto.");
+			DialogWindowManager.Instance.ShowDialog(
+				"Qualcosa è andato storto. Non è stato possibile salvare la foto.");
 			return;
 		}
 		
@@ -159,8 +163,6 @@ public class PhotoController : MonoBehaviour
 
 		if (result == null || !result.isReadable)
 		{
-			Debug.Log("####################################################");
-			Debug.Log("Porca l'oca");
 			StartCoroutine(SaveWithStickers());
 			return;
 		}
@@ -192,8 +194,6 @@ public class PhotoController : MonoBehaviour
 
 		if (result == null || !result.isReadable)
 		{
-			Debug.Log("####################################################");
-			Debug.Log("Porca l'oca condivisa");
 			StartCoroutine(ShareWithStickers());
 			return;
 		}
@@ -216,7 +216,11 @@ public class PhotoController : MonoBehaviour
 		photoImage.texture = null;
 		saved = false;
 		
-		Destroy(result);
+		if(result != null)
+		{
+			Destroy(result);
+		}
+
 		if(picture != null && picture != result)
 		{
 			Destroy(picture);
@@ -229,8 +233,6 @@ public class PhotoController : MonoBehaviour
 		yield return StartCoroutine(TakeScreenShot());
 
 		SavePicture();
-
-		yield return null;
 	}
 
 	public IEnumerator ShareWithStickers()
@@ -262,14 +264,6 @@ public class PhotoController : MonoBehaviour
 			toBeDisabled[i].SetActive(active[i]);
 		}
 	}
-	
-	protected IEnumerator CheckAllPermissions(
-		UnityAction cameraGrantedCallback, 
-		UnityAction galleryGrantedCallback)
-	{
-		yield return StartCoroutine(CheckCameraPermission(cameraGrantedCallback));
-		yield return StartCoroutine(CheckGalleryPermission(galleryGrantedCallback));
-	}
 
 	protected IEnumerator CheckCameraPermission(UnityAction permissionGrantedCallback)
 	{
@@ -281,8 +275,8 @@ public class PhotoController : MonoBehaviour
 			{
 				if(NativeCamera.CanOpenSettings())
 				{
-					DialogueWindowManager.Instance.ShowDialogue(
-						"Non hai autorizzato l'accesso alla fotocamera. " +
+					DialogWindowManager.Instance.ShowDialog(
+						"Non hai autorizzato l'accesso alla fotocamera o alla memoria del telefono. " +
 						"Vuoi andare alle impostazioni del telefono per autorizzarlo?",
 						"OK",
 						"NO",
@@ -290,8 +284,8 @@ public class PhotoController : MonoBehaviour
 				}
 				else
 				{
-					DialogueWindowManager.Instance.ShowDialogue(
-						"Non hai autorizzato l'accesso alla fotocamera. " +
+					DialogWindowManager.Instance.ShowDialog(
+						"Non hai autorizzato l'accesso alla fotocamera o alla memoria del telefono. " +
 						"Per favore, autorizza l'accesso nelle impostazioni del telefono.");
 				}
 
@@ -299,8 +293,9 @@ public class PhotoController : MonoBehaviour
 			}
 			else if (permission == CameraPermission.ShouldAsk)
 			{
-				DialogueWindowManager.Instance.ShowDialogue(
-					"L'app ha bisogno dell'accesso alla fotocamera per scattare la foto.",
+				DialogWindowManager.Instance.ShowDialog(
+					"L'app ha bisogno dell'accesso alla fotocamera e alla memoria del telefono " + 
+					"per scattare la foto e salvarla nella Galleria o condividerla.",
 					"OK",
 					"",
 					() => { permission = NativeCamera.RequestPermission(); });
@@ -334,7 +329,7 @@ public class PhotoController : MonoBehaviour
 			{
 				if(NativeCamera.CanOpenSettings())
 				{
-					DialogueWindowManager.Instance.ShowDialogue(
+					DialogWindowManager.Instance.ShowDialog(
 						"Non hai autorizzato l'accesso alla memoria del telefono. " +
 						"Vuoi andare alle impostazioni del telefono per autorizzarlo?",
 						"OK",
@@ -343,7 +338,7 @@ public class PhotoController : MonoBehaviour
 				}
 				else
 				{
-					DialogueWindowManager.Instance.ShowDialogue(
+					DialogWindowManager.Instance.ShowDialog(
 						"Non hai autorizzato l'accesso alla memoria del telefono. " +
 						"Per favore, autorizza l'accesso nelle impostazioni del telefono.");
 				}
@@ -352,7 +347,7 @@ public class PhotoController : MonoBehaviour
 			}
 			else if (permission == GalleryPermission.ShouldAsk)
 			{
-				DialogueWindowManager.Instance.ShowDialogue(
+				DialogWindowManager.Instance.ShowDialog(
 					"L'app ha bisogno dell'accesso alla memoria del telefono per salvare la foto.",
 					"OK",
 					"",

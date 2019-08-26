@@ -5,25 +5,25 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Events;
 
-public class DialogueWindowManager : MonoBehaviour
+public class DialogWindowManager : MonoBehaviour
 {
-	protected static DialogueWindowManager instance;
+	protected static DialogWindowManager instance;
 
 	/// <summary>
 	/// Returns the instance of the object.
 	/// </summary>
 	/// <returns></returns>
-	public static DialogueWindowManager Instance
+	public static DialogWindowManager Instance
 	{
 		get
 		{
 			if (instance == null)
 			{
-				instance = FindObjectOfType<DialogueWindowManager>(); 
+				instance = FindObjectOfType<DialogWindowManager>(); 
 
 				if (instance == null)
 				{
-					Debug.LogError("An instance of " + typeof(DialogueWindowManager) +
+					Debug.LogError("An instance of " + typeof(DialogWindowManager) +
 						" is needed in the scene, but there is none.");
 				}
 			} 
@@ -32,9 +32,9 @@ public class DialogueWindowManager : MonoBehaviour
 	}
 
 	[SerializeField]
-	private Canvas dialogueCanvas = null;
+	private Canvas dialogCanvas = null;
 	[SerializeField]
-	private TMP_Text dialogueMessage = null;
+	private TMP_Text dialogMessage = null;
 	[SerializeField]
 	private Button agreeButton = null;
 	[SerializeField]
@@ -54,7 +54,7 @@ public class DialogueWindowManager : MonoBehaviour
 		declineButton.gameObject.SetActive(false);
 	}
 
-	public void ShowDialogue(
+	public void ShowDialog(
 		string message, 
 		string agreeLabel = "OK", 
 		string declineLabel = "",
@@ -64,7 +64,7 @@ public class DialogueWindowManager : MonoBehaviour
 		agreeButton.onClick.RemoveAllListeners();
 		declineButton.onClick.RemoveAllListeners();
 
-		dialogueMessage.text = message;
+		dialogMessage.text = message;
 		
 		if(agreeLabel.Length == 0)
 		{
@@ -109,11 +109,11 @@ public class DialogueWindowManager : MonoBehaviour
 			declineButton.gameObject.SetActive(true);
 		}
 
-		dialogueCanvas.enabled = true;
+		dialogCanvas.enabled = true;
 	}
 
 	private void CloseWindow()
 	{
-		dialogueCanvas.enabled = false;
+		dialogCanvas.enabled = false;
 	}
 }

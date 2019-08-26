@@ -98,13 +98,13 @@ public class MainMenu : MonoBehaviour
 				ARSupported(true);
 				break;
 			case ApkAvailabilityStatus.UnknownTimedOut:
-				DialogueWindowManager.Instance.ShowDialogue(
+				DialogWindowManager.Instance.ShowDialog(
 					"L'app sta impiegando troppo tempo per rispondere.\n" +
 					"Per favore, controlla la connessione a internet e riavvia l'app.");
 				break;
 			case ApkAvailabilityStatus.UnknownChecking:
 			case ApkAvailabilityStatus.UnknownError:
-				DialogueWindowManager.Instance.ShowDialogue(
+				DialogWindowManager.Instance.ShowDialog(
 					"L'app ha riscontrato un errore.\n" +
 					"Per favore, controlla la connessione a internet e riavvia l'app.");
 				break;
@@ -124,7 +124,7 @@ public class MainMenu : MonoBehaviour
 		{
 			case ApkAvailabilityStatus.SupportedApkTooOld:
 			case ApkAvailabilityStatus.SupportedNotInstalled:
-				DialogueWindowManager.Instance.ShowDialogue(
+				DialogWindowManager.Instance.ShowDialog(
 					"L'app ha bisogno dell'ultima versione di Google Play Services per AR per funzionare.\n",
 					"Installa",
 					"Rifiuta",
@@ -158,14 +158,14 @@ public class MainMenu : MonoBehaviour
 			case ApkInstallationStatus.Success:
 				break;
 			case ApkInstallationStatus.ErrorUserDeclined:
-				DialogueWindowManager.Instance.ShowDialogue(
+				DialogWindowManager.Instance.ShowDialog(
 					"L'app ha bisogno dell'ultima versione di Google Play Services per AR per funzionare.\n",
 					"Installa",
 					"Rifiuta",
 					InstallARCore);
 				break;
 			case ApkInstallationStatus.Error:
-				DialogueWindowManager.Instance.ShowDialogue(
+				DialogWindowManager.Instance.ShowDialog(
 					"L'installazione ha riscontrato un errore.\n" +
 					"Per favore, controlla la connessione internet e riavvia l'app.");
 				break;
@@ -237,7 +237,6 @@ public class MainMenu : MonoBehaviour
 	private void ARSupported(bool supported)
 	{
 		arMenuButton.gameObject.SetActive(supported);
-		//photoButton.gameObject.SetActive(supported); // TODO: Da cambiare per foto
 
 		if (supported)
 		{
@@ -249,7 +248,6 @@ public class MainMenu : MonoBehaviour
 		{
 			menuLayout.padding = menuPaddingNoAR;
 			photoButton.onClick.AddListener(() => photoController.TryTakePicture());
-			// TODO: Da cambiare per foto
 		}
 
 		arCoreSupported = supported;

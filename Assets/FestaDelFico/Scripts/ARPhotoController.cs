@@ -7,15 +7,24 @@ using GoogleARCore.Examples.ObjectManipulation;
 
 using GalleryPermission = NativeGallery.Permission;
 
-
 public class ARPhotoController : PhotoController
 {
 	public GameObject bottomPanel;
+	public GameObject tutorialPanel;
 	public Canvas[] canvases;
 	public LayerMask cullingMask;
 	public Graphic flashPanel;
 	public float flashTime = 0.1f;
 	public AudioManager audioManager;
+
+	void Start()
+	{
+		if(PlayerPrefs.GetInt("FICOTUTORIAL_SEEN", 0) == 0)
+		{
+			PlayerPrefs.SetInt("FICOTUTORIAL_SEEN", 1);
+			OpenTutorial();
+		}
+	}
 
 	public override void TryTakePicture()
 	{
@@ -76,6 +85,22 @@ public class ARPhotoController : PhotoController
 
 		bottomPanel.SetActive(false);
 		photoPanel.SetActive(true);
+	}
+
+	public void OpenTutorial()
+	{
+		bottomPanel.SetActive(false);
+		tutorialPanel.SetActive(true);
+	}
+
+	public void CloseTutorial()
+	{
+		if(PlayerPrefs.GetInt("FICOTUTORIAL_SEEN", 0) == 0)
+		{
+			PlayerPrefs.SetInt("FICOTUTORIAL_SEEN", 1);
+		}
+		bottomPanel.SetActive(true);
+		tutorialPanel.SetActive(false);
 	}
 
 	private IEnumerator Flash()

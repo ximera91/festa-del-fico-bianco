@@ -14,12 +14,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/FestaDelFico/Scenes/PhotoMode.unity
     guid: e9b421cae45d3534db73700972d48169
-  - enabled: 0
-    path: Assets/FestaDelFico/Scenes/NativeCamera.unity
-    guid: c102b30dcea7f524c86432f93092cc10
-  - enabled: 0
-    path: Assets/FestaDelFico/Scenes/PhotoModeNOAR.unity
-    guid: 092ff40fe6306ab498d68ca9d3f79918
   m_configObjects:
     com.unity.xr.arcore.PlayerSettings: {fileID: 11400000, guid: 04122d42136983f49a30e764237ddf29,
       type: 2}

@@ -7,8 +7,6 @@ using DigitalRubyShared;
 
 using TouchPhase = DigitalRubyShared.TouchPhase;
 
-
-// TODO: aggiungere GameObject notifica sticker e PlayerPrefs "Stickers_used"
 public class StickerManager : MonoBehaviour
 {
 	public GameObject stickersPanel;
@@ -44,9 +42,8 @@ public class StickerManager : MonoBehaviour
 		
 		positionOffset = new Vector2(Screen.width / 2, Screen.height / 2);
 
-		if(PlayerPrefs.GetInt("PHOTOMODE_SEEN", 0) == 0)
+		if(PlayerPrefs.GetInt("STICKERS_SEEN", 0) == 0)
 		{
-			PlayerPrefs.SetInt("PHOTOMODE_SEEN", 0);
 			notification.SetActive(true);
 		}
 		else
@@ -67,9 +64,9 @@ public class StickerManager : MonoBehaviour
 
 	public void OpenStickers()
 	{
-		if(PlayerPrefs.GetInt("PHOTOMODE_SEEN", 0) == 0)
+		if(PlayerPrefs.GetInt("STICKERS_SEEN", 0) == 0)
 		{
-			PlayerPrefs.SetInt("PHOTOMODE_SEEN", 1);
+			PlayerPrefs.SetInt("STICKERS_SEEN", 1);
 			notification.SetActive(false);
 		}
 
@@ -152,8 +149,11 @@ public class StickerManager : MonoBehaviour
 			raycastResults = new List<RaycastResult>();
 			raycaster.Raycast(eventData, raycastResults);
 
-			selectedSticker.Deselect();
-			selectedSticker = null;
+			if(selectedSticker != null)
+			{
+				selectedSticker.Deselect();
+				selectedSticker = null;
+			}
 
 			foreach(RaycastResult r in raycastResults)
 			{
