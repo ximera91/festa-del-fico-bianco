@@ -1,0 +1,42 @@
+name: Build Unity Project
+
+on:
+  workflow_dispatch:
+    inputs:
+        release:
+            type: boolean
+            description: 'Build a release version'
+            default: false
+  push:
+    branches:
+      - refactoring
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+        with:
+          lfs: true
+
+      - name: Build project
+        uses: game-ci/unity-builder@v4.5.0
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          projectPath: 'unity'
+          buildName: 'Android'
+          buildsPath: 'output/builds'
+          androidExportType: ${{ inputs.release && 'androidAppBundle' || 'androidPackage' }}
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: "android-build-${{ inputs.release && 'release' || 'debug' }}"
+          path: output/builds/Android
+          retention-days: 1
